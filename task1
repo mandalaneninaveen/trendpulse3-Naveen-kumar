@@ -1,0 +1,92 @@
+
+# FAQ Knowledge Base
+
+faqs = [
+    {
+        "id": "faq-001",
+        "category": "Account",
+        "question": "How do I reset my password?",
+        "answer": "Click 'Forgot Password' on the login page. Enter your email and check your inbox for a reset link.",
+        "keywords": ["password", "reset", "forgot", "login"]
+    },
+    {
+        "id": "faq-002",
+        "category": "Billing",
+        "question": "What is your refund policy?",
+        "answer": "We offer full refunds within 30 days for unused subscriptions.",
+        "keywords": ["refund", "money", "billing", "payment"]
+    },
+    {
+        "id": "faq-003",
+        "category": "Account",
+        "question": "How can I change my email?",
+        "answer": "Go to Profile Settings and select Edit Email.",
+        "keywords": ["email", "change", "update"]
+    },
+    {
+        "id": "faq-004",
+        "category": "Technical",
+        "question": "Why is my application not working?",
+        "answer": "Check your internet connection and restart the application.",
+        "keywords": ["app", "error", "technical", "working"]
+    },
+    {
+        "id": "faq-005",
+        "category": "Billing",
+        "question": "How do I download my invoice?",
+        "answer": "Go to Billing and select Download Invoice.",
+        "keywords": ["invoice", "download", "payment"]
+    }
+]
+
+
+# Search FAQs by keyword
+def search_by_keyword(faqs, query):
+    """Search FAQs and rank by matching query words."""
+    results = []
+
+    for faq in faqs:
+        text = (faq["question"] + " " + faq["category"] +
+                " " + " ".join(faq["keywords"])).lower()
+
+        hits = sum(word in text for word in query.lower().split())
+
+        if hits > 0:
+            results.append((hits, faq))
+
+    results.sort(key=lambda x: x[0], reverse=True)
+    return [faq for hits, faq in results]
+
+
+# Search FAQ by ID
+def get_faq_by_id(faqs, faq_id):
+    """Return FAQ by ID or None."""
+    for faq in faqs:
+        if faq["id"].lower() == faq_id.lower():
+            return faq
+    return None
+
+
+# Search FAQs by category
+def get_faqs_by_category(faqs, category):
+    """Return FAQs matching a category."""
+    return [faq for faq in faqs
+            if faq["category"].lower() == category.lower()]
+
+
+# Demonstration
+for query in ["forgot my password", "refund", "weather today"]:
+    print("\nQuery:", query)
+    results = search_by_keyword(faqs, query)
+
+    if results:
+        for faq in results:
+            print(f"[{faq['category']}] {faq['question']}")
+            print("→", faq["answer"])
+    else:
+        print("No matching FAQs found.")
+
+
+# Test ID and category functions
+print("\nFAQ by ID:", get_faq_by_id(faqs, "faq-001"))
+print("\nFAQs by Category:", get_faqs_by_category(faqs, "Billing"))
