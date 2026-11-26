@@ -1,0 +1,93 @@
+
+import os
+import requests
+
+# OpenRouter API configuration
+API_KEY = os.getenv("OPENROUTER_API_KEY")
+MODEL = "openai/gpt-4o-mini"
+
+
+# LLM Client Class
+class LLMClient:
+
+    def __init__(self, api_key, model):
+        """Initialize API key and model."""
+        self.api_key = api_key
+        self.model = model
+
+    def generate(self, prompt, system_message=None, max_tokens=512):
+        """Send prompt to OpenRouter and get response."""
+
+        url = "https://openrouter.ai/api/v1/chat/completions"
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_message or "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": max_tokens
+        }
+
+        try:
+            response = requests.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            return response.json()["choices"][0]["message"]["content"]
+
+        except requests.exceptions.RequestException as e:
+            return f"API Error: {e}"
+
+    def generate_faq_response(self, user_question, faq_entry):
+        """Generate a friendly answer using only official FAQ content."""
+
+        system_message = """
+        You are a friendly and professional support agent.
+        Answer only using the provided FAQ information.
+        Do not invent facts.
+        If the FAQ does not contain the answer, say so.
+        Keep the response under 150 words.
+        """
+
+        prompt = f"""
+        User Question: {user_question}
+        FAQ Question: {faq_entry['question']}
+        Official Answer: {faq_entry['answer']}
+
+        Give a natural and helpful response.
+        """
+
+        return self.generate(prompt, system_message)
+
+
+# Demonstration (Reuse Task 1 functions and faqs)
+
+client = LLMClient(API_KEY, MODEL)
+
+questions = [
+    "I can't remember my login password",
+    "Can I get my money back?"
+]
+
+for question in questions:
+
+    print("\nQuestion:", question)
+
+    results = search_by_keyword(faqs, question)
+
+    if results:
+        faq = results[0]
+
+        print("Matched FAQ:", faq["question"])
+
+        answer = client.generate_faq_response(question, faq)
+
+        print("\nSupportAI Response:")
+        print(answer)
+
+    else:
+        print("No matching FAQ found.")
